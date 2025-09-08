@@ -1,7 +1,7 @@
 interface InputGroupProps {
   label: string;
   value: string | number;
-  setValue: (value: string) => void;
+  onChange: (value: string) => void;
   disabled?: boolean;
   placeholder?: string;
   type?: "text" | "number" | "email" | "password";
@@ -12,7 +12,7 @@ interface InputGroupProps {
 const InputGroup = ({
   label,
   value,
-  setValue,
+  onChange,
   disabled = false,
   placeholder = "0",
   type = "text",
@@ -21,10 +21,6 @@ const InputGroup = ({
 }: InputGroupProps) => {
   const inputId = id || `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
   const inputName = name || inputId;
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  };
 
   return (
     <div className="flex flex-col">
@@ -36,10 +32,10 @@ const InputGroup = ({
       </label>
       <div className="mt-2">
         <div
-          className={`flex items-center rounded-md pl-3 outline-1 -outline-offset-1 outline-gray-300 transition-all duration-200 ${
+          className={`flex items-center rounded-md h-10 pl-2 outline-1 -outline-offset-1 outline-gray-300 transition-all duration-200 ${
             disabled
               ? "bg-gray-100 outline-gray-200 cursor-not-allowed"
-              : "bg-white-100 has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-indigo-600"
+              : "bg-white has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-indigo-600"
           }`}
         >
           <input
@@ -48,7 +44,7 @@ const InputGroup = ({
             name={inputName}
             placeholder={placeholder}
             value={value}
-            onChange={handleChange}
+            onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             className={`block min-w-0 grow py-1.5 pr-3 pl-1 text-base placeholder:text-gray-400 focus:outline-none sm:text-sm/6 ${
               disabled
