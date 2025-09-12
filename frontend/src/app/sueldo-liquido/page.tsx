@@ -1,10 +1,20 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import InputGroup from "@/components/inputgroup";
 import SelectGroup from "@/components/selectgroup";
-import { HiOutlinePlusCircle, HiOutlineMinusCircle, HiPlusCircle, HiMinusCircle, HiCurrencyDollar  } from "react-icons/hi";
+import {
+  HiOutlinePlusCircle,
+  HiOutlineMinusCircle,
+  HiPlusCircle,
+  HiMinusCircle,
+  HiCurrencyDollar,
+} from "react-icons/hi";
+import { useRates } from "@/hooks/useRates";
+import type { SelectOption } from "@/types/types";
 
 const SueldoLiquido = () => {
+  const rates = useRates();
+
   const [formData, setFormData] = useState({
     baseSalary: "",
     missingDays: "",
@@ -24,6 +34,37 @@ const SueldoLiquido = () => {
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const calculateNetSalary = useCallback(() => {
+    const baseSalary = Number(formData.baseSalary) ?? 0;
+
+    const maxGratificacion = Math.round(((rates?.minSalary ?? 0) * 4.75) / 12);
+
+    const baseGratificacion = baseSalary * 0.25;
+
+    const gratificacion =
+      formData.hasGratificacion === "si"
+        ? String(Math.min(baseGratificacion, maxGratificacion))
+        : "0";
+
+    const afpTotal = Math.round(baseSalary * Number(formData.afp) / 100);
+    const previsionTotal = Math.round(baseSalary * Number(formData.prevision) / 100) 
+    return {
+      gratificacion,
+      afpTotal,
+      previsionTotal
+    };
+  }, [formData, rates]);
+
+  const afpOptions = useMemo<SelectOption[]>(() => {
+    const afpList = rates?.afp ?? [];
+    return afpList.map((a) => ({ label: a.name ?? "", value: a.worker ?? 0 }));
+  }, [rates?.afp]);
+
+  const { gratificacion, afpTotal, previsionTotal } = useMemo(
+    () => calculateNetSalary(),
+    [calculateNetSalary]
+  );
 
   return (
     <div className="flex justify-center items-center">
@@ -60,8 +101,8 @@ const SueldoLiquido = () => {
                 label="Gratificacion"
               />
               <InputGroup
-                value={formData.gratificacion}
-                onChange={(value) => handleChange("gratificacion", value)}
+                value={gratificacion}
+                onChange={() => {}}
                 label="Gratificacion"
               />
               <InputGroup
@@ -109,11 +150,11 @@ const SueldoLiquido = () => {
               <SelectGroup
                 value={formData.afp}
                 onChange={(value) => handleChange("afp", value)}
-                options={[]}
+                options={afpOptions}
                 label="AFP"
               />
               <InputGroup
-                value={0}
+                value={afpTotal}
                 onChange={() => {}}
                 label="Total AFP"
                 disabled
@@ -121,11 +162,16 @@ const SueldoLiquido = () => {
               <SelectGroup
                 value={formData.prevision}
                 onChange={(value) => handleChange("prevision", value)}
-                options={[]}
+                options={[
+                  {
+                    label: "fonasa",
+                    value: 7,
+                  },
+                ]}
                 label="Previsión"
               />
               <InputGroup
-                value={0}
+                value={previsionTotal}
                 onChange={() => {}}
                 label="Total Prevision"
                 disabled
@@ -201,7 +247,6 @@ const SueldoLiquido = () => {
               disabled
             />
           </div>
-          
         </div>
       </div>
     </div>

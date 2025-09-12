@@ -25,6 +25,8 @@ export interface PayrollRates {
   utm: number;
   uta: number;
 
+  minSalary: number;
+
   afp: AFPRate[];
 
   healthInsurance: {

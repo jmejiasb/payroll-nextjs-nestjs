@@ -50,6 +50,7 @@ export class PayrollService {
       uf: Number(normalized.UFValPeriodo ?? 0),
       utm: Number(normalized.UTMVal ?? 0),
       uta: Number(normalized.UTAVal ?? 0),
+      minSalary: Number(normalized.RMITrabDepeInd ?? 0),
       afp: parseAfpFields(normalized),
       healthInsurance: {
         fonasa: 7 - Number(normalized.Dist7PorcFonasa ?? 0),

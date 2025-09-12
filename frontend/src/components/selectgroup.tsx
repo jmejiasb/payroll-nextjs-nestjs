@@ -1,8 +1,4 @@
-interface SelectOption {
-  value: string | number;
-  label: string;
-  disabled?: boolean;
-}
+import type { SelectOption } from "../types/types"
 
 interface SelectGroupProps {
   label: string;
