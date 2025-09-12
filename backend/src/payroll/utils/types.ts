@@ -13,7 +13,7 @@ export interface FamilyAllowance {
   maxSalary: number;
 }
 
-export interface UnenmploymentContractType {
+export interface UnemploymentContractType {
   type: string;
   worker: number;
   employer: number;
@@ -34,7 +34,7 @@ export interface PayrollRates {
     ccaf: number;
   };
 
-  unemploymentInsurance: UnenmploymentContractType[];
+  unemploymentInsurance: UnemploymentContractType[];
 
   lifeExpectancy: number;
 

@@ -11,6 +11,7 @@ import {
 } from "react-icons/hi";
 import { useRates } from "@/hooks/useRates";
 import type { SelectOption } from "@/types/types";
+import { calculateUniqueTax } from "./utils/utils";
 
 const SueldoLiquido = () => {
   const rates = useRates();
@@ -37,22 +38,51 @@ const SueldoLiquido = () => {
 
   const calculateNetSalary = useCallback(() => {
     const baseSalary = Number(formData.baseSalary) ?? 0;
+    const missingDays = Number(formData.missingDays) ?? 0;
+
+    const baseSalaryTotal = baseSalary - Math.round(baseSalary / 30 * missingDays)
 
     const maxGratificacion = Math.round(((rates?.minSalary ?? 0) * 4.75) / 12);
 
-    const baseGratificacion = baseSalary * 0.25;
+    const baseGratificacion = baseSalaryTotal * 0.25;
 
     const gratificacion =
       formData.hasGratificacion === "si"
-        ? String(Math.min(baseGratificacion, maxGratificacion))
-        : "0";
+        ? Math.min(baseGratificacion, maxGratificacion)
+        : 0;
 
-    const afpTotal = Math.round(baseSalary * Number(formData.afp) / 100);
-    const previsionTotal = Math.round(baseSalary * Number(formData.prevision) / 100) 
+    const grossSalary = baseSalaryTotal + gratificacion;
+
+    const afpTotal = Math.round((grossSalary * Number(formData.afp)) / 100);
+    const previsionTotal = Math.round(
+      (grossSalary * Number(formData.prevision)) / 100
+    );
+
+    const lifeExpectancy = Math.round(
+      (grossSalary * Number(rates?.lifeExpectancy)) / 100
+    );
+
+    const AfcRate = rates?.unemploymentInsurance?.[0];
+    const unemploymentInsurance = Math.round(
+      (grossSalary * Number(AfcRate?.worker)) / 100
+    );
+
+    const impSalary =
+      grossSalary -
+      afpTotal -
+      previsionTotal -
+      unemploymentInsurance;
+
+    const uniqueTax = calculateUniqueTax(impSalary, rates?.utm ?? 0);
+
     return {
+      baseSalaryTotal,
       gratificacion,
       afpTotal,
-      previsionTotal
+      previsionTotal,
+      lifeExpectancy,
+      unemploymentInsurance,
+      uniqueTax,
     };
   }, [formData, rates]);
 
@@ -61,10 +91,29 @@ const SueldoLiquido = () => {
     return afpList.map((a) => ({ label: a.name ?? "", value: a.worker ?? 0 }));
   }, [rates?.afp]);
 
-  const { gratificacion, afpTotal, previsionTotal } = useMemo(
-    () => calculateNetSalary(),
-    [calculateNetSalary]
-  );
+  const {
+    baseSalaryTotal,
+    gratificacion,
+    afpTotal,
+    previsionTotal,
+    unemploymentInsurance,
+    uniqueTax,
+  } = useMemo(() => calculateNetSalary(), [calculateNetSalary]);
+
+  const totalHaberes = useMemo(() => {
+    const comision = Number(formData.comision);
+    const lunch = Number(formData.lunch);
+    const transport = Number(formData.transport);
+    return baseSalaryTotal + gratificacion + comision + lunch + transport
+  }, [formData, baseSalaryTotal, gratificacion])
+
+  const totalDescuentos = useMemo(() => {
+    const apv = Number(formData.apv)
+    const other = Number(formData.other)
+    const otherLegal = Number(formData.otherLegal)
+
+    return afpTotal + previsionTotal +  unemploymentInsurance + uniqueTax + apv + other + otherLegal
+  }, [formData, afpTotal, previsionTotal, unemploymentInsurance, uniqueTax])
 
   return (
     <div className="flex justify-center items-center">
@@ -178,7 +227,7 @@ const SueldoLiquido = () => {
               />
               <div className="col-span-2">
                 <InputGroup
-                  value={0}
+                  value={unemploymentInsurance}
                   onChange={() => {}}
                   label="Seguro de Cesantia"
                   disabled
@@ -186,12 +235,20 @@ const SueldoLiquido = () => {
               </div>
               <div className="col-span-2">
                 <InputGroup
-                  value={0}
+                  value={uniqueTax}
+                  onChange={() => {}}
+                  label="Impuesto Unico"
+                  disabled
+                />
+              </div>
+              {/* <div className="col-span-2">
+                <InputGroup
+                  value={lifeExpectancy}
                   onChange={() => {}}
                   label="Seguro Social Expetativa de Vida"
                   disabled
                 />
-              </div>
+              </div> */}
               <div className="col-span-2">
                 <InputGroup
                   value={formData.apv}
@@ -223,7 +280,7 @@ const SueldoLiquido = () => {
           <div className="flex align-bottom">
             <HiPlusCircle className="block text-green-600 size-6 mr-1" />
             <InputGroup
-              value={0}
+              value={totalHaberes}
               onChange={() => {}}
               label="Haberes"
               disabled
@@ -232,7 +289,7 @@ const SueldoLiquido = () => {
           <div className="flex align-bottom ml-auto">
             <HiMinusCircle className="block text-red-600 size-6 mr-1" />
             <InputGroup
-              value={0}
+              value={totalDescuentos}
               onChange={() => {}}
               label="Descuentos"
               disabled
@@ -241,7 +298,7 @@ const SueldoLiquido = () => {
           <div className="flex align-bottom ml-auto">
             <HiCurrencyDollar className="block text-green-400 size-6 mr-1" />
             <InputGroup
-              value={0}
+              value={totalHaberes - totalDescuentos}
               onChange={() => {}}
               label="Sueldo Liquido"
               disabled
