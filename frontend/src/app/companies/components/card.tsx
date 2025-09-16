@@ -6,7 +6,7 @@ import React from "react";
 
 type IconButtonProps = {
   icon: IconType;
-  label: string;           // for screen readers
+  label: string; // for screen readers
   onClick?: () => void;
 };
 
@@ -18,7 +18,7 @@ function IconButton({ icon: Icon, label, onClick }: IconButtonProps) {
       aria-label={label}
       className="inline-flex items-center justify-center rounded-md p-2
                  text-slate-600 hover:text-slate-900 hover:bg-white/60
-                 focus:outline-none focus:ring-2 focus:ring-black/20"
+                 focus:outline-none focus:ring-2 focus:ring-black/20 cursor-pointer"
     >
       <Icon className="h-6 w-6" />
     </button>
