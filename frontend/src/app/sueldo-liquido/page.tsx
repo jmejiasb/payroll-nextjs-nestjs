@@ -116,7 +116,7 @@ const SueldoLiquido = () => {
   }, [formData, afpTotal, previsionTotal, unemploymentInsurance, uniqueTax])
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center mt-8">
       <div>
         <form className="grid grid-cols-2 gap-0" action="">
           <div className="m-1 p-2 bg-gray-50 rounded-xl shadow-md">
