@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Company } from 'src/companies/companies.entity';
 
 @Entity({ name: 'employees' })
 export class Employee {
@@ -43,4 +50,10 @@ export class Employee {
 
   @Column('numeric', { precision: 12, scale: 0, default: 0 })
   salary: number;
+
+  @ManyToOne(() => Company, (company) => company.employees, {
+    eager: false,
+  })
+  @JoinColumn({ name: 'company_id' })
+  company: Company;
 }

@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsPositive,
   IsDateString,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateEmployee {
@@ -60,4 +61,8 @@ export class CreateEmployee {
   @IsNumber({ maxDecimalPlaces: 0 })
   @IsPositive()
   salary: number;
+
+  @IsUUID()
+  @IsNotEmpty()
+  companyId: string;
 }
